@@ -1,0 +1,182 @@
+import(methods)
+
+import(BiocGenerics)
+import(S4Vectors)
+import(IRanges)
+import(XVector)
+import(GenomeInfoDb)
+import(GenomicRanges)
+import(grid)
+
+importClassesFrom(biomaRt, Mart)
+
+importClassesFrom(Biostrings, DNAStringSet, BStringSet, DNAString, BString)
+
+importClassesFrom(BSgenome, BSgenome, MaskedBSgenome)
+
+importClassesFrom(GenomicFeatures, "TxDb")
+
+importClassesFrom(rtracklayer, UCSCData)
+
+importMethodsFrom(AnnotationDbi, colnames, get, ls, mget, tail)
+
+
+importMethodsFrom(BSgenome, providerVersion)
+
+importMethodsFrom(GenomicFeatures, isActiveSeq, "isActiveSeq<-", exonsBy, transcriptsBy, transcripts)
+
+importMethodsFrom(rtracklayer, chrom, close, getTable, "tableName<-", track,
+                  ucscTableQuery, trackNames, tableNames, import, import.gff,
+                  import.gff1, import.gff2, import.gff3, import.2bit, import.bed15,
+                  import.bw, import.ucsc, import.bed, import.bedGraph, import.chain,
+                  import.wig, seqinfo)
+
+importMethodsFrom(Biostrings, consensusMatrix, consensusString, unmasked, complement)
+
+
+importFrom(Biobase, listLen, rowMax, rowMin)
+
+importFrom(Biostrings, DNAStringSet, BStringSet, DNAString, BString, reverseComplement, readDNAStringSet, DNA_ALPHABET, stackStrings)
+
+importFrom(biomaRt, getBM, useMart, listDatasets, listAttributes, listFilters)
+
+importFrom(Rsamtools, scanBamFlag, scanBamHeader, scanBam, ScanBamParam, scanFaIndex, scanFa, BamFile, scanBamWhat, bamWhich)
+
+importFrom(graphics, par)
+
+importFrom(digest, digest)
+
+importFrom(grDevices, boxplot.stats, col2rgb, colorRampPalette, extendrange,
+           hsv, rgb2hsv)
+
+importFrom(lattice, current.panel.limits, panel.abline, panel.grid, panel.lines,
+           panel.points, panel.polygon, panel.segments, panel.xyplot, panel.text,
+           trellis.par.get)
+
+importFrom(matrixStats, colMaxs, rowMedians, rowMins)
+
+importFrom(latticeExtra, panel.xyarea, panel.horizonplot)
+
+
+importFrom(RColorBrewer, brewer.pal)
+
+importFrom(rtracklayer, GenomicData, ucscGenomes, browserSession, BigWigFile, FastaFile, TwoBitFile)
+
+importFrom(stats, loess.smooth)
+
+importFrom(biovizBase, getBioColor)
+
+importFrom(utils, assignInNamespace, browseURL, write.table)
+
+importFrom(GenomicAlignments, extractAlignmentRangesOnReference, sequenceLayer, GAlignments, summarizeJunctions)
+
+###
+
+export(".chrName",
+       ".doCache",
+       "AlignedReadTrack",
+       "AlignmentsTrack",
+       "AnnotationTrack",
+       "DetailsAnnotationTrack",
+       "BiomartGeneRegionTrack",
+       "CustomTrack",
+       "DataTrack",
+       "DisplayPars",
+       "SequenceTrack",
+       "OverlayTrack",
+       "drawGD",
+       "GeneRegionTrack",
+       "GenomeAxisTrack",
+       "HighlightTrack",
+       "IdeogramTrack",
+       "UcscTrack",
+       "addScheme",
+       "as.list",
+       "availableDefaultMapping",
+       "availableDisplayPars",
+       "clearSessionCache",
+       "exportTracks",
+       "getScheme",
+       "plotTracks")
+
+exportClasses("AlignedReadTrack",
+              "AlignmentsTrack",
+              "AnnotationTrack",
+              "DetailsAnnotationTrack",
+              "BiomartGeneRegionTrack",
+              "DataTrack",
+              "DisplayPars",
+	      "GdObject",
+              "GeneRegionTrack",
+              "GenomeAxisTrack",
+              "IdeogramTrack",
+              "ImageMap",
+	      "NumericTrack",
+	      "RangeTrack",
+              "SequenceTrack",
+	      "StackedTrack",
+              "HighlightTrack",
+              "OverlayTrack",
+              "CustomTrack")
+
+exportMethods("[",
+              "as.list",
+              "chromosome",
+              "chromosome<-",
+              "coerce",
+              "consolidateTrack",
+              "coords",
+              "coverage",
+              "displayPars",
+              "displayPars<-",
+              "end",
+              "end<-",
+              "exon",
+              "exon<-",
+              "feature",
+              "feature<-",
+              "gene",
+              "gene<-",
+              "genome",
+              "genome<-",
+              "getPar",
+              "group",
+              "group<-",
+              "head",
+              "identifier",
+              "identifier<-",
+              "imageMap",
+              "initialize",
+              "length",
+              "max",
+              "min",
+              "names",
+              "names<-",
+              "position",
+              "range",
+              "ranges",
+              "score",
+              "seqnames",
+              "seqlevels",
+              "seqinfo",
+              "setPar",
+              "split",
+              "stacking",
+              "stacking<-",
+              "stacks",
+              "start",
+              "start<-",
+              "strand",
+              "strand<-",
+              "subseq",
+              "subset",
+              "symbol",
+              "symbol<-",
+              "tags",
+              "tail",
+              "transcript",
+              "transcript<-",
+              "values",
+              "values<-",
+              "width",
+              "width<-")

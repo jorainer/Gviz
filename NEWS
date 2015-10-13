@@ -1,0 +1,219 @@
+CHANGES IN VERSION 1.11.0
+-------------------------
+
+NEW FEATURES
+
+    o BiomartGeneRegionTracks can now be created based on a gene
+      symbol, Ensembl trancript id, Ensebml gene id or ENTREZ gene id.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Streaming behaviour for BiomartGeneRegionTracks. Already queried
+      regions are cached, and new data is fetched from Biomart on
+      demand.
+
+    o Proper handling of UCSC genome identifiers in
+      BiomartGeneRegionTracks. Automated mapping to Ensembl genome
+      versions and Biomart archives.
+
+BUG FIXES
+
+    o A number of significant fixes.
+
+
+CHANGES IN VERSION 1.10.0
+-------------------------
+
+BUG FIXES
+
+    o Various bug fixes.
+
+CHANGES IN VERSION 1.9.0
+-------------------------
+
+NEW FEATURES
+
+    o The new CustomTrack class to allow for user-defined plotting functions.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The collapseTranscripts parameter now offers more control over the type of collapsing.
+
+
+CHANGES IN VERSION 1.8.0
+-------------------------
+
+NEW FEATURES
+
+    o The new HighlightTrack class to add a comon highlighting region
+      for multiple tracks.
+
+    o The new OverlayTrack class to merge the panels of multiple
+      tracks into a single panel.
+
+    o The reverseStrand display parameter lets you plot the data
+      relative to the negative strand.
+
+    o The just.label display parameter adds control to the placement
+      of group labls in AnnotationTrack and GeneRegionTrack objects.
+
+    o The box.legend display parameter to add a box around the legend
+      in a DataTrack object.
+
+    o extend.right and extend.left now also take relative expansion
+      factors (as values between -1 and 1).
+
+    o A new shape type fixedArrow for AnnotationTrack and
+      GeneRegionTrack objects, and the arrowHeadWidth and
+      arrowHeadMaxWidth parameters to better control the arrow shapes.
+
+    o Display parameter schemes to persistently modify parameter
+      settings.
+
+    o The new featureAnnotation and groupAnnotation parameters to
+      better control the feature and group labels in AnnotationTracks.
+
+    o The new exonAnnotation and transcriptAnnotation parameters to
+      better control the exon and transcript labels in
+      GeneRegionTracks.
+
+    o The new AlignmentsTrack class to visualized aligned NGS reads in
+      a BAM file.
+
+BUG FIXES
+
+    o A number of significant fixes.
+
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Some display parameter names have been reworked, but the old
+      ones should still work as aliases.
+
+    o Overplotting in AnnotationTrack and GeneRegionTrack objects has
+      been minimized to be able to make better use of alpha
+      blending. Also the way composite exons (e.g. part UTR, part CDS)
+      are plotted has been changed. Those will now be merged into one
+      feature as long as the exon identifier is identical and if they
+      can be reduced into a single range wit min.gapwidth=1.
+
+
+CHANGES IN VERSION 1.6.0
+-------------------------
+
+NEW FEATURES
+
+    o The DataTrack class now comes with a new horizon plot type
+      thanks to input from Ge Tan.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o isActiveSeq and isActiveSeq<- are deprecated in GenomicFeatures
+      and their methods have been removed from Gviz.
+
+
+CHANGES IN VERSION 1.4.0
+-------------------------
+
+NEW FEATURES
+
+    o BiomartGeneRegionTracks will now make use of the available CDS
+      information in Ensembl.
+
+    o The constructors to the AnnotationTrack, GeneRegionTrack,
+      DataTrack and SequenceTrack classes now accept a character
+      scalar that points to a file on the file system. A number of
+      default parser functions have been implemented to read the
+      standard file types. Alternatively, a user-defined import
+      function can be provided. This feature also supports streaming
+      from indexed file types like BAM or bigWig, in which case the
+      data is fetched dynamically upon each plotting operation.
+
+    o The mart object in BiomartGeneRegionTrack objects is now cached
+      in order to speed up subsequent queries to the same mart.
+
+    o When plotting DataTracks with type 'gradient' or 'heatmap', a
+      color scale is plotted next to the regular y-axis to indicate
+      the mapping of numeric values in the false color range. Thanks
+      to Mark Heron for his code contribution.
+
+    o Sample names can now be shown in heatmap-type plots by setting
+      the 'showSampleNames' display parameter.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Complete refactoring of the automatic font size adjustments to
+      provide more reasonable defaults.
+
+    o Tick labels on the genomic axis are now show in between tick
+      marks when zoomed in to single nucleotide level.
+
+BUG FIXES
+
+    o Fixed a bug in IdeogramTracks where all bands in the rounded
+      caps at the edges of the Ideogram were missing.
+
+    o The way genomic ranges are plotted is now according to the Lego
+      block model suggested by Herve. This is only relevant when zooming
+      in to the level of single nucleotides.
+
+    o Tick labels on the genome axis show only significant digits now.
+
+    o Sample ordering in heatmap plots is now correct.
+
+    o Numerous little fixes.
+
+CHANGES IN VERSION 1.2.0
+-------------------------
+
+NEW FEATURES
+
+    o A SequenceTrack class has been added to draw genomic sequence
+      information on a Gviz plot. Possible inputs for the track are
+      DNAStringSet objects or directly from BSgenome packages.
+
+    o GeneRegionTracks can now deal with coding and non-coding regions
+      by means of the feature property in combination with the
+      thinBoxFeature display parameter.
+
+    o StackedTracks now have a new display parameter 'reverseStacking'
+      which reverts the horizontal ordering of stacked items. If set
+      to TRUE, the lowest items are moved to the top of the stack, and
+      vice versa.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Updated the show methods for most tracks to give more meaningful
+      and more compact information about the track's
+      content. Availablability of data on other chromosomes than the
+      currently active one should now be indicated.
+
+    o IdeogramTracks can now be constructed from a cytoband table via
+      the new bands argument in the constructor.
+
+    o AnnotationTrack objects now by default draw connecting lines in
+      a light gray color. This feature can be controlled via the
+      col.line display parameter.
+
+    o Sliding window summarization can now deal with NA values.
+
+    o Exporting drawGD from the name space now to allow for
+      sub-classing of GdObjects in other packages.
+
+    o When building GeneRegionTracks from TranscriptDb objects the
+      information about UTRs and coding regions is now retained.
+
+
+BUG FIXES
+
+    o When zooming into the emty space between two grouped features,
+      the connecting line will now be plotted for all classes inheriting
+      from AnnotationTrack.
+
+    o An error in calculating ylims when drawing AlignedReadTracks has
+      been fixed.
+
+    o Numerous other little fixes that mainly aim at improving
+      performance.
+
+

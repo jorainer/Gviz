@@ -920,7 +920,7 @@ GeneRegionTrack <- function(range=NULL, rstarts=NULL, rends=NULL, rwidths=NULL, 
                  gene="unknown", symbol="unknown", strand="*", density=1, chromosome="chrNA")
     range <- .buildRange(range=range, groupId="transcript", start=rstarts, end=rends, width=rwidths, args=args, defaults=defs,
                          chromosome=chromosome, tstart=start, tend=end, trackType="GeneRegionTrack", importFun=importFunction,
-                         genome=genome)
+                         genome=genome, ...)
     if(is.list(range)){
         isStream <- TRUE
         slist <- range
@@ -1714,7 +1714,7 @@ IdeogramTrack <- function(chromosome=NULL, genome, name=NULL, bands=NULL, ...){
             out
         }), env, cenv)
     }
-    
+
     return(list(availableGenomes=genomes, bands=bands))
 }
 .cacheMartData <- function(bmtrack, chromosome=NULL, staged=FALSE){

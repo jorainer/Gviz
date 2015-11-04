@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{Gviz users guide}
-%\VignetteDepends{Gviz}
+%\VignetteDepends{Gviz,EnsDb.Hsapiens.v75}
 %\VignetteKeywords{visualization, genomics}
 %\VignettePackage{Gviz}
 \documentclass[11pt]{article}
@@ -1600,6 +1600,49 @@ feature(txTr)
 plotTracks(txTr)
 @
 
+\subsubsection*{Building GeneRegionTrack objects from EnsDbs}
+
+An alternative resource of gene annotations is provided by annotation packages
+built by the \Rpackage{ensembldb} package. The \Rclass{EnsDb} object from these
+packages are similar in functionality than \Rclass{TxDb} objects, but provide,
+and are tailored for, gene annotations from Ensembl. In addition, the Ensembl
+based annotation provides gene and transcript biotypes and the \Rclass{EnsDb}
+allows to further filter results based on its filter system. In the code below
+we fetch all genes defined in Ensembl version 75 within the region defined by
+the example \code{geneModels}.
+
+
+<<ensdb2grt1>>=
+library(EnsDb.Hsapiens.v75)
+ensdb <- EnsDb.Hsapiens.v75
+grtr <- GeneRegionTrack(ensdb, start=min(geneModels$start), end=max(geneModels$end),
+                        chromosome=sub(unique(geneModels$chromosome), pattern="chr",
+                                       replacement=""))
+@
+
+<<ensdb2grtplot, fig=TRUE, results=hide, width=7.5, height=1.25>>=
+plotTracks(grtr, transcriptAnnotation="symbol")
+@
+
+Alternatively, we could fetch e.g. lincRNAs and protein coding genes separately.
+
+<<ensdb2grt2>>=
+lincRNAs <- GeneRegionTrack(ensdb, start=min(geneModels$start), end=max(geneModels$end),
+                            chromosome=sub(unique(geneModels$chromosome), pattern="chr",
+                                           replacement=""),
+                            filter=GenebiotypeFilter("lincRNA"), name="lincRNAs")
+protCoding <- GeneRegionTrack(ensdb, start=min(geneModels$start), end=max(geneModels$end),
+                              chromosome=sub(unique(geneModels$chromosome), pattern="chr",
+                                             replacement=""),
+                              filter=GenebiotypeFilter("protein_coding"),
+                              name="proteins")
+
+@
+
+<<ensdb2grtplot2, fig=TRUE, results=hide, width=7.5, height=2.25>>=
+plotTracks(list(lincRNAs, protCoding), transcriptAnnotation="symbol")
+@
+
 \subsubsection*{Display parameters for GeneRegionTrack objects}
 
 For a complete listing of all the available display parameters please
@@ -1630,6 +1673,7 @@ time depending on usage and network traffic. Hence the results are
 almost never going to be returned instantaniously.
 
 <<BiomartGeneRegionTrackShow, eval=FALSE>>=
+
 biomTrack <- BiomartGeneRegionTrack(genome="hg19", chromosome=chr, start=20e6, end=21e6,
                                   name="ENSEMBL")
 plotTracks(biomTrack)
@@ -2582,6 +2626,7 @@ a track class' documentation should provide all the possible options.
    & GRanges & Constructor or setAs method, additional data in metadata columns \\
    & GRangesList & Constructor or setAs method, additional data in metadata columns \\
    & TxDb & Constructor or setAs method \\
+   & EnsDb & Constructor \\
   \hline
   DataTrack & data.frame & Constructor \\
    & IRanges & Constructor + additional data matrix \\

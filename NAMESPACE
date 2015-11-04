@@ -18,12 +18,16 @@ importClassesFrom(GenomicFeatures, "TxDb")
 
 importClassesFrom(rtracklayer, UCSCData)
 
+importClassesFrom(ensembldb, EnsDb)
+
 importMethodsFrom(AnnotationDbi, colnames, get, ls, mget, tail)
 
 
 importMethodsFrom(BSgenome, providerVersion)
 
 importMethodsFrom(GenomicFeatures, isActiveSeq, "isActiveSeq<-", exonsBy, transcriptsBy, transcripts)
+
+importMethodsFrom(ensembldb, getGeneRegionTrackForGviz)
 
 importMethodsFrom(rtracklayer, chrom, close, getTable, "tableName<-", track,
                   ucscTableQuery, trackNames, tableNames, import, import.gff,

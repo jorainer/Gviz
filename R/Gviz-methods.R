@@ -4190,6 +4190,34 @@ setMethod(".buildRange", signature("GRangesList"),
               mcols(range)[[groupId]] <- grps
               return(.buildRange(range=range, ...))})
 
+## For EnsDb we use the getGeneRegionTrackForGviz method to retrieve the GRanges object.
+setMethod(".buildRange", signature("EnsDb"),
+          function(range, groupId="transcript", tstart, tend, chromosome, filter=list(), args, ...){
+              if(missing(chromosome))
+                  chromosome <- NULL
+              if(missing(tstart))
+                  tstart <- NULL
+              if(missing(tend))
+                  tend <- NULL
+              ## We'll use Ensembl chromosome names...
+              ucscs <- getOption("ucscChromosomeNames")
+              if(ucscs){
+                  if(!is.null(chromosome)){
+                      chrName <- gsub(chromosome, pattern="chr", replacement="")
+                  }else{
+                      chrName <- NULL
+                  }
+              }
+              Res <- getGeneRegionTrackForGviz(range, filter=filter, chromosome=chrName, start=tstart,
+                                               end=tend)
+              if(ucscs){
+                  seqlevels(Res) <- paste0("chr", seqlevels(Res))
+              }
+              args <- list(genome=genome(Res)[1])
+              chromosome <- as.character(seqnames(Res)[1])
+
+              return(.buildRange(range=sort(Res), chromosome=chromosome, args=args, ...))})
+
 ## For TxDb objects we extract the grouping information and use the GRanges method
 setMethod(".buildRange", signature("TxDb"),
           function(range, groupId="transcript", tstart, tend, chromosome, args, ...){

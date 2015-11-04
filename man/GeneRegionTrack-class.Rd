@@ -98,6 +98,15 @@ GeneRegionTrack(range=NULL, rstarts=NULL, rends=NULL, rwidths=NULL,
 	\code{TxDb} object is retained in the
 	\code{GeneRegionTrack}.}
 
+      \item{}{A \code{EnsDb} object: gene model definitions along with
+	gene or transcript biotypes can be retrieved from these, Ensembl
+	annotation based, objects. In addition to retrieve annotations
+	from a specific region defined by the arguments
+	\code{chromosome}, \code{start} and \code{end}, filters can be
+	specified and passed as optional \code{filter} argument. See the
+	documentation and vignette of the \code{ensembldb} package for
+	more information.}
+
       \item{}{A \code{GRanges} object: the genomic ranges for the
 	\code{GeneRegion} track as well as the optional additional
 	metadata columns \code{feature},

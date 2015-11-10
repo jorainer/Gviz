@@ -20,6 +20,8 @@ importClassesFrom(rtracklayer, UCSCData)
 
 importClassesFrom(ensembldb, EnsDb)
 
+importClassesFrom(Rsamtools, FaFile)
+
 importMethodsFrom(AnnotationDbi, colnames, get, ls, mget, tail)
 
 
@@ -44,7 +46,7 @@ importFrom(Biostrings, DNAStringSet, BStringSet, DNAString, BString, reverseComp
 
 importFrom(biomaRt, getBM, useMart, listDatasets, listAttributes, listFilters)
 
-importFrom(Rsamtools, scanBamFlag, scanBamHeader, scanBam, ScanBamParam, scanFaIndex, scanFa, BamFile, scanBamWhat, bamWhich)
+importFrom(Rsamtools, scanBamFlag, scanBamHeader, scanBam, ScanBamParam, scanFaIndex, scanFa, BamFile, scanBamWhat, bamWhich, indexFa, index, path, FaFile)
 
 importFrom(graphics, par)
 

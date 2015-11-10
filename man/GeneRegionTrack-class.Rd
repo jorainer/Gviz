@@ -98,7 +98,7 @@ GeneRegionTrack(range=NULL, rstarts=NULL, rends=NULL, rwidths=NULL,
 	\code{TxDb} object is retained in the
 	\code{GeneRegionTrack}.}
 
-      \item{}{A \code{EnsDb} object: gene model definitions along with
+      \item{}{An \code{EnsDb} object: gene model definitions along with
 	gene or transcript biotypes can be retrieved from these, Ensembl
 	annotation based, objects. In addition to retrieve annotations
 	from a specific region defined by the arguments
@@ -1891,6 +1891,26 @@ tags(grTrack)
 grTrack <- plotTracks(grTrack)$foo
 coords(grTrack)
 tags(grTrack)
+
+## Create a GeneRegionTrack using EnsDb
+library(EnsDb.Hsapiens.v75)
+edb <- EnsDb.Hsapiens.v75
+
+## We have to disable the automatic renaming of chromosome names to
+## UCSC format as we are working here with Ensembl annotations.
+options(ucscChromosomeNames=FALSE)
+
+## Fetching all genes encoded on a specified region on chromosome Y
+grTrack <- GeneRegionTrack(range=edb, chromosome="Y", start=2800000, en=2804000)
+plotTracks(list(GenomeAxisTrack(), grTrack), transcriptAnnotation="symbol")
+
+## Alternatively, use the filters from the ensembldb package to retrieve specific
+## information. In the example below we fetch all lincRNAs on chromosome Y.
+lncs <- GeneRegionTrack(range=edb, chromosome="Y", filter=GenebiotypeFilter("lincRNA"))
+plotTracks(list(GenomeAxisTrack(), lncs))
+
+## Resetting to UCSC chromosome names
+options(ucscChromosomeNames=TRUE)
 
 }
 

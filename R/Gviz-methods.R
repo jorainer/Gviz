@@ -20,9 +20,11 @@ setMethod("range", "GenomeAxisTrack", function(x) ranges(x@range))
 setMethod("seqnames", "RangeTrack", function(x) as.character(seqnames(ranges(x))))
 setMethod("seqnames", "SequenceDNAStringSetTrack", function(x) as.character(names(x@sequence)))
 setMethod("seqnames", "SequenceBSgenomeTrack", function(x) as.character(seqnames(x@sequence)))
+setMethod("seqnames", "FaFileSequenceTrack", function(x) as.character(seqnames(x@idx)))
 setMethod("seqlevels", "RangeTrack", function(x) unique(seqnames(x)))
 setMethod("seqlevels", "SequenceDNAStringSetTrack", function(x) seqnames(x)[width(x@sequence)>0])
 setMethod("seqlevels", "SequenceBSgenomeTrack", function(x) seqnames)
+setMethod("seqlevels", "FaFileSequenceTrack", function(x) as.character(seqlevels(x@idx)))
 setMethod("seqinfo", "RangeTrack", function(x) table(seqnames(x)))
 
 ## Min and max ranges
@@ -67,6 +69,15 @@ setMethod("length", "GenomeAxisTrack", function(x) length(ranges(x)))
 setMethod("length", "IdeogramTrack", function(x) length(ranges(x)))
 setMethod("length", "SequenceTrack", function(x)
           if(chromosome(x) %in% seqnames(x)) length(x@sequence[[chromosome(x)]]) else 0)
+## Extracting the (chromosome) lengths from the GRanges stored in @idx
+setMethod("length", "FaFileSequenceTrack", function(x){
+    elIdx <- which(seqnames(x) %in% chromosome(x))
+    if(length(elIdx) == 0){
+        return(0)
+    }else{
+        return(width(x@idx[elIdx]))
+    }
+})
 ## setMethod("length", "ReferenceAnnotationTrack", function(x) 0)
 ## setMethod("length", "ReferenceGeneRegionTrack", function(x) 0)
 ## setMethod("length", "ReferenceDataTrack", function(x) 0)
@@ -135,7 +146,12 @@ setMethod("subseq", "SequenceTrack", function(x, start=NA, end=NA, width=NA){
     finalSeq <- rep(DNAString(padding), end-start+1)
     if(chromosome(x) %in% seqnames(x) && rend>rstart){
         chrSeq <- x@sequence[[chromosome(x)]]
-        seq <- subseq(chrSeq, start=rstart, end=rend)
+        if(is(x, "FaFileSequenceTrack")){
+            ## Use the sequence "as-is"
+            seq <- chrSeq
+        }else{
+            seq <- subseq(chrSeq, start=rstart, end=rend)
+        }
         if(is(x, "SequenceBSgenomeTrack")) seq <- unmasked(seq)
         subseq(finalSeq, ifelse(start<1, abs(start)+2, 1), width=rend-rstart+1) <- seq
     }
@@ -157,6 +173,28 @@ setMethod("subseq", "ReferenceSequenceTrack", function(x, start=NA, end=NA, widt
             end <- start+width[1]-1
     }
     x@sequence <- x@stream(file=x@reference, selection=GRanges(chromosome(x), ranges=IRanges(start, end)))
+    return(callNextMethod())
+})
+
+
+setMethod("subseq", "FaFileSequenceTrack", function(x, start=NA, end=NA, width=NA){
+    ## We want start and end to be set if width is provided
+    if(!is.na(width[1])){
+        if(is.na(start) && is.na(end))
+            stop("Two out of the three in 'start', 'end' and 'width' have to be provided")
+        if(is.na(start))
+            start <- end-width[1]+1
+        if(is.na(end))
+            end <- start+width[1]-1
+    }
+    ## Check if the chromosome is there...
+    idx <- x@idx
+    if(!as.character(chromosome(x)) %in% as.character(seqnames(idx))){
+        warning("Can not find chromosome ", chromosome(x), " in the Fasta file!")
+        x@sequence <- DNAStringSet()
+    }else{
+        x@sequence <- scanFa(x@fafile, GRanges(chromosome(x), ranges=IRanges(start, end)))
+    }
     return(callNextMethod())
 })
 
@@ -229,6 +267,9 @@ setReplaceMethod("chromosome", "OverlayTrack", function(GdObject, value){
 ## Set or extract the genome from a RangeTrack object
 setMethod("genome", "RangeTrack", function(x) x@genome)
 setMethod("genome", "SequenceTrack", function(x) x@genome)
+setMethod("genome", "FaFileSequenceTrack", function(x){
+    return(genome(x@idx)[1])
+})
 setReplaceMethod("genome", "GdObject", function(x, value){
     return(x)
 })
@@ -4200,10 +4241,11 @@ setMethod(".buildRange", signature("EnsDb"),
               if(missing(tend))
                   tend <- NULL
               ## We'll use Ensembl chromosome names...
+              chrName <- chromosome
               ucscs <- getOption("ucscChromosomeNames")
               if(ucscs){
                   if(!is.null(chromosome)){
-                      chrName <- gsub(chromosome, pattern="chr", replacement="")
+                      chrName <- sub(chromosome, pattern="^chr", replacement="")
                   }else{
                       chrName <- NULL
                   }

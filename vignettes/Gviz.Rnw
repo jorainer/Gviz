@@ -33,7 +33,7 @@ BiocStyle::latex()
 
 \title{The Gviz User Guide}
 \author{Florian Hahne\footnote{florian.hahne@novartis.com}}
-\date{Edited: January 2014; Compiled: \today}
+\date{Edited: November 2015; Compiled: \today}
 
 \begin{document}
 
@@ -63,8 +63,10 @@ addParTable <- function(class, skip=c("showTitle", "size", "background.title"), 
 
 hasUcscConnection <- !is(try(rtracklayer::browserSession(), silent=TRUE), "try-error")
 oto <- options(timeout=5)
+## Use the ensembl mirror of biomart since biomart seems to be offline.
 hasBiomartConnection <- (!is(try(download.file("http://www.biomart.org", tempfile(), quiet=TRUE)), "try-error") &&
-                         !is(try(biomaRt::listMarts(), silent=TRUE), "try-error"))
+                          !is(try(biomaRt::listMarts(host="www.ensembl.org"), silent=TRUE),
+                              "try-error"))
 options(timeout=oto)
 ## Uncommenting this helps when the UCSC server has a hickup but still lets you connect:
 ##hasUcscConnection <- !is(try(rtracklayer::browserSession(), silent=TRUE), "try-error") && !is(try(IdeogramTrack(genome="hg19", chromosome=7), silent=TRUE), "try-error")
@@ -1611,10 +1613,16 @@ allows to further filter results based on its filter system. In the code below
 we fetch all genes defined in Ensembl version 75 within the region defined by
 the example \code{geneModels}.
 
+Importantly, we have to set the \code{"ucscChromosomeNames"} option to
+\code{FALSE} in order to work with Ensembl based annotations.
 
 <<ensdb2grt1>>=
 library(EnsDb.Hsapiens.v75)
 ensdb <- EnsDb.Hsapiens.v75
+
+## Disabling the automatic renaming of chromosome names to UCSC format!
+options(ucscChromosomeNames=FALSE)
+
 grtr <- GeneRegionTrack(ensdb, start=min(geneModels$start), end=max(geneModels$end),
                         chromosome=sub(unique(geneModels$chromosome), pattern="chr",
                                        replacement=""))
@@ -1641,6 +1649,13 @@ protCoding <- GeneRegionTrack(ensdb, start=min(geneModels$start), end=max(geneMo
 
 <<ensdb2grtplot2, fig=TRUE, results=hide, width=7.5, height=2.25>>=
 plotTracks(list(lincRNAs, protCoding), transcriptAnnotation="symbol")
+@
+
+At last we re-set the UCSC chromosme name option to \code{TRUE} so that we don't
+get any errors in the following chunks.
+
+<<ensdbreset>>=
+options(ucscChromosomeNames=TRUE)
 @
 
 \subsubsection*{Display parameters for GeneRegionTrack objects}
@@ -1975,16 +1990,17 @@ addParTable("DetailsAnnotationTrack")
 
 
 \subsection{SequenceTrack}
-So far we have displayed all kinds of ranges on a genome, but never
-really looked at the underlying genomic sequence. To that end, the
-\mgg package defines the \Rclass{SequenceTrack} class which can hold
-genomic sequence information derived from either a
-\Rclass{DNAStringSet} object of, even more convenient, from one of the
-\Rclass{BSgenome} packages. There is not formal checking of the
-track's genome, so it is up to the user to provide reasonable inputs
-to the class' constructor. As with all the other track types, the
-constructor has the same name as the class. In this example we build a
-\Rclass{SequenceTrack} from the human hg19 UCSC genome.
+So far we have displayed all kinds of ranges on a genome, but never really
+looked at the underlying genomic sequence. To that end, the \mgg package defines
+the \Rclass{SequenceTrack} class which can hold genomic sequence information
+derived from either a \Rclass{DNAStringSet} object of, even more convenient,
+from one of the \Rclass{BSgenome} packages. Alternatively, a \Rclass{FaFile} as
+provided by the \Rpackage{AnnotationHub} package can be used as input to the
+\Rclass{SequenceTrack} constructor. There is not formal checking of the track's
+genome, so it is up to the user to provide reasonable inputs to the class'
+constructor. As with all the other track types, the constructor has the same
+name as the class. In this example we build a \Rclass{SequenceTrack} from the
+human hg19 UCSC genome.
 
 <<SequenceTrack1>>=
 library(BSgenome.Hsapiens.UCSC.hg19)
@@ -2064,6 +2080,45 @@ decreasing it.
 <<SequenceTrack8, results=hide, width=7.5, height=0.3, fig=TRUE>>=
 plotTracks(sTrack, chromosome=1, from=20000, to=20100, cex=0.5)
 @
+
+An alternative method to create a \code{SequenceTrack} is by submitting directly
+a \code{FaFile} to the constructor. The \code{AnnotationHub} package provides
+such files, e.g. representing genomic sequence fasta files from Ensembl.
+In the code below we query and fetch a \code{FaFile} containing the genomic
+sequence for Homo sapiens from Ensembl release 80 (thus representing GRCh38)
+from \code{AnnotationHub}. Note that the code is not executed during generation
+of this vignette due to required download of the large fasta file. The
+\code{AnnotationHub} however caches downloads locally, thus subsequent calls
+to the same resource would not require any additional downloads.
+
+<<AnnotationHub1, results=hide, eval=FALSE>>=
+## Initializing AnnotationHub ressource.
+library(AnnotationHub)
+ah <- AnnotationHub()
+## Query all available files for Ensembl release 80 and Homo sapiens.
+query(ah, c("Homo sapiens", "release-80"))
+
+## One of the entries represents the "dna.toplevel" fasta file
+## containing the full genomic sequence. We will fetch that file.
+dna <- ah[["AH47266"]]
+@
+
+Now that we have the genomic sequence we can create the corresponding
+\code{SequenceTrack}. Since we're working here with Ensembl annotations, we have
+to set the \code{"ucscChromosomeNames"} option to false (i.e. Ensembl names
+chromosome names without the prefix \code{"chr"} which is used by UCSC).
+
+<<SequenceTrackFromFaFile, results=hide, eval=FALSE>>=
+## It is important to disable the UCSC chromosome naming!
+options(ucscChromosomeNames=FALSE)
+
+## Create the SequenceTrack.
+faTrack <- SequenceTrack(sequence=dna, chromosome="2", genome="GRCh38")
+
+## Plot it.
+plotTracks(list(GenomeAxisTrack(), faSeq), from=199970, to=200000)
+@
+
 
 \subsubsection*{Display parameters for SequenceTrack objects}
 
@@ -2634,6 +2689,7 @@ a track class' documentation should provide all the possible options.
   \hline
   SequenceTrack & DNAStringSet & Constructor \\
    & BSgenome & Constructor \\
+   & FaFile & Constructor \\
   \hline
 \end{longtable}
 

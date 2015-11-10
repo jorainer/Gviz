@@ -19,6 +19,7 @@ setClassUnion("ListOrEnv", c("list", "environment"))
 setClassUnion("GRangesOrIRanges", c("GRanges", "IRanges"))
 setClassUnion("NULLOrMissing", c("NULL", "missing"))
 setClassUnion("BSgenomeOrNULL", c("BSgenome", "NULL"))
+setClassUnion("FaFileOrNULL", c("FaFile", "NULL"))
 ##----------------------------------------------------------------------------------------------------------------------
 
 
@@ -898,6 +899,12 @@ GeneRegionTrack <- function(range=NULL, rstarts=NULL, rends=NULL, rwidths=NULL, 
                             transcript, gene, symbol, chromosome, genome, stacking="squish",
                             name="GeneRegionTrack", start=NULL, end=NULL, importFunction, stream=FALSE, ...)
 {
+    ## Set ucscChromosomeNames FALSE if we're working with EnsDbs.
+    ucsc <- getOption("ucscChromosomeNames")
+    if(is(range, "EnsDb")){
+        ## For now there is only a warning, but we might consider to fix that permanently for EnsDbs!
+        warning("You should consider to set 'options(ucscChromosomeNames=FALSE)' if you are working with Ensembl based annotations!")
+    }
     ## Some defaults
     covars <- if(is.data.frame(range)) range else if(is(range, "GRanges")) as.data.frame(mcols(range)) else data.frame()
     isStream <- FALSE
@@ -2022,7 +2029,16 @@ SequenceTrack <- function(sequence, chromosome, genome, name="SequenceTrack", im
                 }
             }
         }
-    }else{
+    } else if(is(sequence, "FaFile")){
+        ## check if chromosome is
+        obj <- new("FaFileSequenceTrack", fafile=sequence, chromosome=chromosome, genome=genome,
+                   name=name, ...)
+        ## No need to load the file again.
+        ## Working directly with FaFiles which can be retrieved from AnnotataionHub.
+        ## obj <- new("ReferenceSequenceTrack", chromosome=chromosome, genome=genome, name=name,
+        ##            stream=.import.fafile, reference=sequence)
+    }
+    else{
         stop("Argument sequence must be of class 'BSgenome', 'DNAStringSet' or 'character'")
     }
     return(obj)
@@ -2091,6 +2107,44 @@ setClass("ReferenceSequenceTrack", contains=c("SequenceDNAStringSetTrack", "Refe
 setMethod("initialize", "ReferenceSequenceTrack", function(.Object, stream, reference, ...) {
     .Object <- selectMethod("initialize", "ReferenceTrack")(.Object=.Object, reference=reference, stream=stream)
     .Object <- callNextMethod(.Object, ...)
+    return(.Object)
+})
+##----------------------------------------------------------------------------------------------------------------------
+
+
+##----------------------------------------------------------------------------------------------------------------------
+## FaFileSequenceTrack:
+##
+## The FaFile version of the SequenceTrack class. We use an already existing FaFile, e.g. one that was
+## downloaded via AnnotationHub instead of importing and creating one from the file name (the reason
+## being, that AnnotationHub FaFiles come with a separate index file that is NOT named as supposed
+## (i.e. <filename>.fai).
+## Basically, we will use this class just internally, no need to export it.
+##----------------------------------------------------------------------------------------------------------------------
+setClass("FaFileSequenceTrack", representation=representation(fafile="FaFileOrNULL", idx="GRanges"),
+         contains=c("SequenceDNAStringSetTrack"),
+         prototype=prototype(fafile=NULL, idx=GRanges()))
+setMethod("initialize", "FaFileSequenceTrack", function(.Object, fafile=NULL, genome=NULL, ...){
+    ## Create an index if none present...
+    if(is.na(index(fafile))){
+        message("Creating missing index...", appendLF=FALSE)
+        indexFa(fafile)
+        fafile <- FaFile(path(fafile))
+        message("done")
+    }
+    .Object@fafile <- fafile
+    .Object <- callNextMethod(.Object, ...)
+    ## Check the chromosome...
+    idx <- scanFaIndex(fafile)
+    if(!as.character(chromosome(.Object)) %in% as.character(seqnames(idx))){
+        stop(paste0("Chromosome ", chromosome(.Object), " not present in the Fasta file. Eventually, it might help to ",
+                    "set options(ucscChromosomeNames=FALSE)."))
+    }
+    ## Set genome.
+    if(!is.null(genome))
+        genome(idx) <- genome
+    ## Save the index; this will reduce I/O on later calls.
+    .Object@idx <- idx
     return(.Object)
 })
 ##----------------------------------------------------------------------------------------------------------------------

@@ -1,3 +1,21 @@
+CHANGES IN VERSION 1.15.2
+-------------------------
+
+NEW FEATURES
+
+    o Support Rsamtools FaFile as input argument 'sequence' in SequenceTrack.
+
+
+
+CHANGES IN VERSION 1.15.1
+-------------------------
+
+BUG FIXES
+
+    o Fix in .buildRange for EnsDb objects when ucscChromsomeNames is TRUE.
+
+
+
 CHANGES IN VERSION 1.15.1
 -------------------------
 

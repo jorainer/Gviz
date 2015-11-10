@@ -1293,7 +1293,9 @@ addScheme <- function(scheme, name){
 .getBiomart <- function(genome){
     map <- .ucsc2Ensembl(genome)
     if(map$date == "head"){
-        bm <- useMart("ensembl", dataset=map$dataset)
+        ##        bm <- useMart("ensembl", dataset=map$dataset)
+        ## Quick fix for the offline biomart. Using the Ensembl biomart instance
+        bm <- useMart(host="www.ensembl.org", "ENSEMBL_MART_ENSEMBL", dataset=map$dataset)
         ds <- listDatasets(bm)
         mt <- ds[match(map$dataset, ds$dataset), "version"]
         if(is.na(mt)){
